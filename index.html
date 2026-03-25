@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>朱朱话术中心</title>
+    <style>
+        :root { --primary: #007bff; --bg: #f4f7f9; --sidebar-bg: #2c3e50; --highlight: #ff4d4f; --danger: #ff4d4f; }
+        body { font-family: "Microsoft YaHei", sans-serif; background: var(--bg); margin: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+        
+        /* 顶部标签页切换 */
+        .app-tabs { background: #fff; border-bottom: 1px solid #ddd; display: flex; align-items: center; padding: 0 15px; height: 45px; flex-shrink: 0; justify-content: space-between; }
+        .tab-btn-group { display: flex; gap: 8px; }
+        .tab-link { padding: 5px 20px; cursor: pointer; border: 1px solid #dcdfe6; background: #f8f9fa; border-radius: 4px; font-size: 13px; font-weight: bold; }
+        .tab-link.active { background: var(--primary); color: white; border-color: var(--primary); }
+
+        /* 基础布局 */
+        .app-container { flex: 1; display: flex; overflow: hidden; }
+        .page { display: none; width: 100%; height: 100%; overflow: hidden; }
+        .page.active { display: flex; }
+
+        /* --- 话术页样式 --- */
+        .sidebar { width: 220px; background: var(--sidebar-bg); color: white; display: flex; flex-direction: column; flex-shrink: 0; }
+        .sidebar-header { padding: 15px; font-weight: bold; border-bottom: 1px solid #3e4f5f; display: flex; justify-content: space-between; align-items: center; }
+        .sidebar-menu { flex: 1; overflow-y: auto; }
+        details { border-bottom: 1px solid #34495e; }
+        summary { padding: 12px 15px; cursor: pointer; font-size: 13px; background: #1a252f; outline: none; list-style: none; display: flex; justify-content: space-between; align-items: center; }
+        summary::-webkit-details-marker { display: none; }
+        summary::after { content: '▶'; font-size: 10px; color: #666; }
+        details[open] summary::after { content: '▼'; color: var(--primary); }
+        .side-item { padding: 10px 25px; cursor: pointer; font-size: 12px; opacity: 0.7; border-left: 4px solid transparent; }
+        .side-item:hover { background: #34495e; opacity: 1; }
+        .side-item.active { background: #1a252f; opacity: 1; border-left-color: var(--primary); color: #fff; font-weight: bold; }
+        .drag-over { background: rgba(0, 123, 255, 0.4) !important; outline: 2px dashed var(--primary) !important; }
+
+        .main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+        .quick-bar { background: #fff; padding: 10px 15px; display: flex; gap: 8px; border-bottom: 1px solid #eee; flex-wrap: wrap; }
+        .quick-btn { padding: 5px 12px; background: #f0f2f5; border-radius: 4px; cursor: pointer; font-size: 12px; border: 1px solid #dcdfe6; transition: 0.2s; }
+        .quick-btn:hover { background: var(--primary); color: white; border-color: var(--primary); }
+        .quick-btn b { margin-right: 4px; color: #909399; }
+
+        .toolbar { padding: 10px 15px; background: white; display: flex; gap: 10px; border-bottom: 1px solid #eee; }
+        .search-input { flex: 1; padding: 8px; border: 1px solid #ddd; border-radius: 4px; outline: none; }
+
+        .content { flex: 1; padding: 15px; overflow-y: auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; align-content: flex-start; }
+        .card { background: white; border-radius: 6px; padding: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); cursor: grab; border: 1px solid #eee; position: relative; transition: 0.2s; }
+        .card:hover { border-color: var(--primary); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .del-btn { position: absolute; top: 5px; right: 5px; width: 22px; height: 22px; background: #f5f7fa; color: #999; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; cursor: pointer; opacity: 0; border: none; }
+        .card:hover .del-btn { opacity: 1; }
+        .card-text { font-size: 13px; color: #333; line-height: 1.6; white-space: pre-wrap; pointer-events: none; margin-right: 15px; }
+        .card-tag { font-size: 10px; color: #999; border-top: 1px dotted #eee; margin-top: 8px; padding-top: 5px; pointer-events: none; }
+        mark { background: none; color: var(--highlight); font-weight: bold; }
+
+        /* --- 报表页样式 --- */
+        #page-report { padding: 20px; background: #f0f2f5; justify-content: center; box-sizing: border-box; }
+        .report-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; width: 100%; max-width: 1000px; height: 95%; }
+        .report-box { background: white; border-radius: 8px; padding: 15px; display: flex; flex-direction: column; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        .report-box textarea { flex: 1; border: 1px solid #ddd; padding: 10px; resize: none; outline: none; font-family: monospace; }
+        #reportRes { flex: 1; background: #fafafa; border: 1px solid #eee; padding: 10px; white-space: pre-wrap; overflow-y: auto; font-size: 13px; }
+
+        /* 弹窗与提示 */
+        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center; z-index: 9999; }
+        .modal-body { background: white; padding: 20px; border-radius: 8px; width: 85%; max-width: 800px; height: 85vh; display: flex; flex-direction: column; }
+        #toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #28a745; color: white; padding: 8px 25px; border-radius: 20px; display: none; z-index: 10000; font-size: 13px; }
+    </style>
+</head>
+<body>
+
+<div id="toast">操作成功 ✓</div>
+
+<div class="app-tabs">
+    <div style="font-weight:bold; color:var(--sidebar-bg);">朱朱话术中心</div>
+    <div class="tab-btn-group">
+        <div class="tab-link active" onclick="switchTab('page-words', this)">📋 话术中心</div>
+        <div class="tab-link" onclick="switchTab('page-report', this)">📊 线数报表</div>
+    </div>
+    <button onclick="exportData()" style="font-size:12px; cursor:pointer; background:none; border:1px solid #ccc; border-radius:4px; padding:2px 10px;">全量导出</button>
+</div>
+
+<div class="app-container">
+    <div id="page-words" class="page active">
+        <div class="sidebar">
+            <div class="sidebar-header"><span>全部分类</span></div>
+            <div class="sidebar-menu" id="categoryMenu"></div>
+        </div>
+        <div class="main">
+            <div class="quick-bar" id="quickBar"></div>
+            <div class="toolbar">
+                <input type="text" class="search-input" id="searchInput" placeholder="搜索关键词..." oninput="handleSearch()">
+                <button onclick="showModal()" style="font-size:12px; cursor:pointer; padding:0 15px; background: #fff; border: 1px solid #ddd; border-radius: 4px;">⚙ 维护数据</button>
+            </div>
+            <div class="content" id="scriptContainer"></div>
+        </div>
+    </div>
+
+    <div id="page-report" class="page">
+        <div class="report-layout">
+            <div class="report-box">
+                <div style="margin-bottom:8px; font-weight:bold;">数据录入 (格式: 名字 算式)</div>
+                <textarea id="repInp" placeholder="糖心 80/3&#10;新平台 80" oninput="runCalc()"></textarea>
+            </div>
+            <div class="report-box">
+                <div style="margin-bottom:8px; font-weight:bold;">报表预览</div>
+                <div id="reportRes">等待录入...</div>
+                <div style="margin-top:10px; display:flex; justify-content:space-between; align-items:center;">
+                    <span>总计: <b id="repTotal" style="color:#28a745; font-size:20px;">0.00</b></span>
+                    <button onclick="doCopy(document.getElementById('reportRes').innerText)" style="padding:8px 20px; background:#28a745; color:white; border:none; border-radius:4px; cursor:pointer; font-weight:bold;">复制报表</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="configModal">
+    <div class="modal-body">
+        <h3>1. 话术库维护 (分类-子类|话术)</h3>
+        <textarea id="rawInput" style="flex:2;"></textarea>
+        <h3>2. 个人快捷按钮 (按钮名|内容)</h3>
+        <textarea id="quickInput" style="flex:1;"></textarea>
+        <div style="display:flex; gap:10px; margin-top: 15px;">
+            <button onclick="saveData()" style="flex:1; padding:12px; background:var(--primary); color:white; border:none; border-radius:4px; cursor:pointer; font-weight: bold;">保存更改</button>
+            <button onclick="hideModal()" style="flex:1; padding:12px; background:#6c757d; color:white; border:none; border-radius:4px; cursor:pointer;">取消</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let scripts = []; let quicks = []; let curCat = '全部'; let openCats = new Set();
+    window.onload = () => {
+        scripts = JSON.parse(localStorage.getItem('DHS_DATA') || '[]');
+        quicks = JSON.parse(localStorage.getItem('DHS_QUICK') || '[]');
+        [...new Set(scripts.map(s => s.cat.split('-')[0]))].forEach(m => openCats.add(m));
+        renderAll();
+    };
+    function switchTab(id, el) {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.tab-link').forEach(b => b.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        el.classList.add('active');
+    }
+    function renderAll() { renderSidebar(); renderQuickBar(); handleSearch(); }
+    function renderQuickBar() {
+        const bar = document.getElementById('quickBar');
+        bar.innerHTML = quicks.map((q, i) => `
+            <div class="quick-btn" onclick="doCopy(\`${q.val.replace(/`/g, '\\`')}\`)">
+                <b>${i+1}.</b>${q.label}
+            </div>`).join('');
+    }
+    function renderSidebar() {
+        const menu = document.getElementById('categoryMenu');
+        const groups = { "未分类": [] };
+        scripts.forEach(s => {
+            const main = s.cat.includes('-') ? s.cat.split('-')[0] : "未分类";
+            if (!groups[main]) groups[main] = [];
+            if (!groups[main].includes(s.cat)) groups[main].push(s.cat);
+        });
+        let html = `<div class="side-item ${curCat === '全部'?'active':''}" onclick="setCat('全部')" ondragover="allowDrop(event)" ondragleave="removeDragHint(event)" ondrop="dropToCat(event, '全部')">📋 全部话术</div>`;
+        Object.keys(groups).sort().forEach(g => {
+            if (groups[g].length === 0 && g === "未分类") return;
+            html += `<details ${openCats.has(g)?'open':''} ontoggle="trackToggle('${g}', this.open)">
+                <summary onclick="setCat('${g}')" ondrop="dropToCat(event, '${g}')" ondragover="allowDrop(event)" ondragleave="removeDragHint(event)">${g}</summary>`;
+            groups[g].sort().forEach(sub => {
+                html += `<div class="side-item ${curCat === sub ? 'active':''}" onclick="setCat('${sub}')" ondrop="dropToCat(event, '${sub}')" ondragover="allowDrop(event)" ondragleave="removeDragHint(event)">${sub.includes('-')?sub.split('-')[1]:sub}</div>`;
+            });
+            html += `</details>`;
+        });
+        menu.innerHTML = html;
+    }
+    function handleSearch() {
+        const key = document.getElementById('searchInput').value.trim().toLowerCase();
+        const words = key.split(/\s+/).filter(w => w !== "");
+        let list = (curCat === '全部') ? scripts : scripts.filter(s => s.cat === curCat || s.cat.startsWith(curCat + '-'));
+        if (words.length > 0) list = list.filter(s => words.every(w => s.text.toLowerCase().includes(w) || s.cat.toLowerCase().includes(w)));
+        document.getElementById('scriptContainer').innerHTML = list.map(s => {
+            const oIdx = scripts.indexOf(s);
+            let t = s.text; 
+            if (words.length > 0) t = s.text.replace(new RegExp(`(${words.join('|')})`, 'gi'), '<mark>$1</mark>');
+            return `<div class="card" draggable="true" ondragstart="dragCard(event, ${oIdx})" onclick="doCopy(\`${s.text.replace(/`/g, '\\`')}\`)" oncontextmenu="editSingleCat(${oIdx}); return false;">
+                <button class="del-btn" onclick="event.stopPropagation(); deleteCard(${oIdx})">×</button>
+                <div class="card-text">${t}</div><div class="card-tag"># ${s.cat}</div>
+            </div>`;
+        }).join('');
+    }
+    function runCalc() {
+        const val = document.getElementById('repInp').value;
+        let total = 0; let res = "";
+        val.split('\n').forEach(line => {
+            if(!line.trim()) return;
+            let parts = line.includes(':') ? line.split(':') : (line.includes('：') ? line.split('：') : line.trim().split(/\s+/));
+            let name = parts.length >= 2 ? parts.slice(0, -1).join(' ') : "项目";
+            let formula = parts[parts.length - 1];
+            try {
+                let num = eval(formula.match(/[\d\+\-\*\/\.\(\)]+/)[0]);
+                total += num;
+                res += `${name}: ${num.toFixed(2)}\n`;
+            } catch(e) { res += `${name}: [错误]\n`; }
+        });
+        document.getElementById('repTotal').innerText = total.toFixed(2);
+        document.getElementById('reportRes').innerText = res + (res ? `\n--- 总计 ---\n线数 ${total.toFixed(2)}` : "");
+    }
+    function setCat(c) { curCat = c; renderAll(); }
+    function trackToggle(g, o) { o ? openCats.add(g) : openCats.delete(g); }
+    function dragCard(ev, i) { ev.dataTransfer.setData("idx", i); }
+    function allowDrop(ev) { ev.preventDefault(); ev.currentTarget.classList.add('drag-over'); }
+    function removeDragHint(ev) { ev.currentTarget.classList.remove('drag-over'); }
+    function dropToCat(event, target) {
+        event.preventDefault(); event.currentTarget.classList.remove('drag-over');
+        const idx = event.dataTransfer.getData("idx");
+        if (!scripts[idx]) return;
+        scripts[idx].cat = (target === '全部') ? "未分类" : target;
+        saveToLocal(); renderAll();
+    }
+    function showModal() {
+        document.getElementById('rawInput').value = scripts.map(s => `${s.cat}|${s.text}`).join('\n');
+        document.getElementById('quickInput').value = quicks.map(q => `${q.label}|${q.val}`).join('\n');
+        document.getElementById('configModal').style.display = 'flex';
+    }
+    function hideModal() { document.getElementById('configModal').style.display = 'none'; }
+    function saveData() {
+        scripts = document.getElementById('rawInput').value.trim().split('\n').filter(l => l.includes('|')).map(l => ({
+            cat: l.split('|')[0].trim(), text: l.split('|').slice(1).join('|').trim()
+        }));
+        quicks = document.getElementById('quickInput').value.trim().split('\n').filter(l => l.includes('|')).map(l => ({
+            label: l.split('|')[0].trim(), val: l.split('|').slice(1).join('|').trim()
+        }));
+        saveToLocal(); renderAll(); hideModal(); showToast("储存成功");
+    }
+    function saveToLocal() {
+        localStorage.setItem('DHS_DATA', JSON.stringify(scripts));
+        localStorage.setItem('DHS_QUICK', JSON.stringify(quicks));
+    }
+    function doCopy(t) {
+        const a = document.createElement('textarea'); a.value = t; document.body.appendChild(a); a.select(); document.execCommand('copy'); document.body.removeChild(a);
+        showToast("复制成功 ✓");
+    }
+    function showToast(m) {
+        const t = document.getElementById('toast'); t.innerText = m; t.style.display = 'block';
+        setTimeout(() => t.style.display = 'none', 1000);
+    }
+    function deleteCard(idx) { if(confirm("删除吗？")) { scripts.splice(idx, 1); saveToLocal(); renderAll(); } }
+    function exportData() {
+        const b = new Blob([scripts.map(s => `${s.cat}|${s.text}`).join('\n')], {type: 'text/plain'});
+        const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = `话术备份.txt`; a.click();
+    }
+</script>
+</body>
+</html>
