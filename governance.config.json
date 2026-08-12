@@ -3,7 +3,7 @@
   "projectId": "zhuzhu-userscript",
   "repository": "zhuzooey-ship-it/zhuzhu",
   "defaultBranch": "main",
-  "spreadsheetId": "1Vm8b9sPXBXarX6mnOEmNClTrPjYnXuW5rX96Xbdmi6w",
+  "spreadsheetId": "1jrmn7f_oBIx1UeVsv9ToP0fbkcisYrLuykb1BiyoUJU",
   "sourceGlobs": [
     "src/**/*.user.js",
     "src/**/*.js",
@@ -62,6 +62,15 @@
       "目标版本",
       "验收条件",
       "备注"
+    ],
+    "变更影响": [
+      "当前状态",
+      "备注"
+    ],
+    "一致性检查": [
+      "当前状态",
+      "负责人",
+      "备注"
     ]
   },
   "blockingRiskLevels": [
@@ -70,5 +79,21 @@
   ],
   "manualContractsFile": "governance/contracts.json",
   "manualTestFile": "governance/test-catalog.json",
-  "manualRoadmapFile": "governance/roadmap.json"
+  "manualRoadmapFile": "governance/roadmap.json",
+  "canonicalSourceFile": "src/customer-payment-order-assistant.user.js",
+  "requiredUserscriptMetadata": [
+    "name",
+    "version",
+    "match",
+    "grant"
+  ],
+  "nearDuplicateThreshold": 0.86,
+  "nearDuplicateMinimumChars": 220,
+  "existingUsageSummary": {
+    "sheetName": "使用说明",
+    "titleRange": "A29:F29",
+    "headerRange": "A30:F30",
+    "dataRange": "A31:F80"
+  },
+  "enforceImpactGate": false
 }
