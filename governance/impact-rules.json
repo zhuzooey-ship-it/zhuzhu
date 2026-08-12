@@ -1,0 +1,68 @@
+{
+  "schemaVersion": 1,
+  "rules": [
+    {
+      "ruleId": "IMPACT-001",
+      "changeTarget": "GM 存储键",
+      "mustCheck": ["发送端", "Worker 监听端", "结果回传端", "过期清理", "旧版本迁移", "契约测试"],
+      "affectedFeatures": ["BRIDGE-001", "BRIDGE-002"],
+      "gate": "BLOCK",
+      "verification": "键名的写入者、读取者与契约测试必须一致",
+      "status": "启用"
+    },
+    {
+      "ruleId": "IMPACT-002",
+      "changeTarget": "跨 Tab 案件 Schema",
+      "mustCheck": ["生产方", "消费方", "schemaVersion", "旧缓存处理", "错误回传", "测试样本"],
+      "affectedFeatures": ["BRIDGE-001", "BRIDGE-002"],
+      "gate": "BLOCK",
+      "verification": "生产方与消费方的字段集合必须一致",
+      "status": "启用"
+    },
+    {
+      "ruleId": "IMPACT-003",
+      "changeTarget": "订单金额字段",
+      "mustCheck": ["响应标准化", "金额档位", "匹配评分", "结果 UI", "回归测试"],
+      "affectedFeatures": ["OCR-002", "ORDER-001", "ORDER-002"],
+      "gate": "BLOCK",
+      "verification": "字段候选与测试样本必须同步",
+      "status": "启用"
+    },
+    {
+      "ruleId": "IMPACT-004",
+      "changeTarget": "平台路由表结构",
+      "mustCheck": ["Sheet 读取器", "缓存 Schema", "路由匹配", "适配器选择", "同步器"],
+      "affectedFeatures": ["CONFIG-001", "ROUTE-001", "ROUTE-002"],
+      "gate": "BLOCK",
+      "verification": "字段名称与读取映射必须一致",
+      "status": "启用"
+    },
+    {
+      "ruleId": "IMPACT-005",
+      "changeTarget": "DOM 选择器",
+      "mustCheck": ["会话识别", "输入框写入", "MutationObserver", "页面样本测试"],
+      "affectedFeatures": ["CONTEXT-001", "OCR-001"],
+      "gate": "WARN",
+      "verification": "至少一个脱敏 DOM fixture 可命中",
+      "status": "启用"
+    },
+    {
+      "ruleId": "IMPACT-006",
+      "changeTarget": "OCR 时间解析规则",
+      "mustCheck": ["字符修复", "候选排序", "状态栏时间排除", "失败回退", "固定图片回归"],
+      "affectedFeatures": ["OCR-001"],
+      "gate": "BLOCK",
+      "verification": "固定 OCR 测试集必须全部通过",
+      "status": "启用"
+    },
+    {
+      "ruleId": "IMPACT-007",
+      "changeTarget": "API 路径或响应字段",
+      "mustCheck": ["请求参数", "登录失效处理", "响应标准化", "契约", "空结果与错误测试"],
+      "affectedFeatures": ["ORDER-001", "ORDER-002", "USER-001"],
+      "gate": "BLOCK",
+      "verification": "脱敏 API fixture 的契约测试必须通过",
+      "status": "启用"
+    }
+  ]
+}
