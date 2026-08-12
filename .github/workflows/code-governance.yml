@@ -1,0 +1,83 @@
+name: Userscript Code Governance
+
+on:
+  push:
+    branches: ['**']
+    paths:
+      - 'src/**'
+      - 'scripts/**'
+      - 'governance/**'
+      - 'schemas/**'
+      - 'tests/**'
+      - 'governance.config.json'
+      - 'package.json'
+      - '.github/workflows/code-governance.yml'
+  pull_request:
+    paths:
+      - 'src/**'
+      - 'scripts/**'
+      - 'governance/**'
+      - 'schemas/**'
+      - 'tests/**'
+      - 'governance.config.json'
+      - 'package.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: userscript-governance-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  analyze:
+    if: ${{ !contains(github.event.head_commit.message || '', '[skip governance]') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Refuse internal source in a public repository
+        shell: bash
+        env:
+          REPOSITORY_PRIVATE: ${{ github.event.repository.private }}
+        run: |
+          set -euo pipefail
+          source_count="$(find src -type f \( -name '*.user.js' -o -name '*.js' -o -name '*.mjs' \) ! -name 'README.md' | wc -l | tr -d ' ')"
+          if [[ "${REPOSITORY_PRIVATE}" != "true" && "${source_count}" != "0" ]]; then
+            echo '::error::正式 Userscript 不得放在 Public repository。请先把仓库改成 Private。'
+            exit 1
+          fi
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Analyze userscript
+        run: npm run analyze
+
+      - name: Validate governance
+        env:
+          GOVERNANCE_STRICT: ${{ github.ref_name == 'main' && 'true' || 'false' }}
+        run: npm run validate
+
+      - name: Upload private governance artifact
+        if: ${{ github.event.repository.private }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: governance-${{ github.sha }}
+          path: generated/
+          retention-days: 30
+
+      - name: Sync Google Sheets
+        if: ${{ github.ref_name == 'main' && github.event_name != 'pull_request' }}
+        env:
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+          GOOGLE_SHEET_ID: ${{ secrets.GOOGLE_SHEET_ID }}
+        run: npm run sync:sheets

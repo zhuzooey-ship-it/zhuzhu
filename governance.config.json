@@ -1,0 +1,74 @@
+{
+  "schemaVersion": 1,
+  "projectId": "zhuzhu-userscript",
+  "repository": "zhuzooey-ship-it/zhuzhu",
+  "defaultBranch": "main",
+  "spreadsheetId": "1Vm8b9sPXBXarX6mnOEmNClTrPjYnXuW5rX96Xbdmi6w",
+  "sourceGlobs": [
+    "src/**/*.user.js",
+    "src/**/*.js",
+    "src/**/*.mjs"
+  ],
+  "excludeGlobs": [
+    "src/**/*.min.js",
+    "src/vendor/**"
+  ],
+  "longFunctionLines": 120,
+  "generatedDirectory": "generated",
+  "manualFeatureFile": "governance/feature-catalog.json",
+  "sheetTabs": {
+    "dashboard": "总览仪表板",
+    "features": "功能目录",
+    "symbols": "代码索引",
+    "dependencies": "依赖关系",
+    "contracts": "契约表",
+    "impactRules": "变更联动",
+    "tests": "测试矩阵",
+    "roadmap": "优化路线图",
+    "syncLog": "同步日志"
+  },
+  "manualColumns": {
+    "功能目录": [
+      "人工确认",
+      "备注"
+    ],
+    "代码索引": [
+      "风险",
+      "优化建议",
+      "人工确认",
+      "备注"
+    ],
+    "依赖关系": [
+      "强制联动",
+      "备注"
+    ],
+    "契约表": [
+      "兼容策略",
+      "人工确认",
+      "备注"
+    ],
+    "测试矩阵": [
+      "实际结果",
+      "状态",
+      "最后测试",
+      "证据链接",
+      "备注"
+    ],
+    "优化路线图": [
+      "优先级",
+      "复杂度",
+      "负责人",
+      "当前状态",
+      "目标版本",
+      "验收条件",
+      "备注"
+    ]
+  },
+  "blockingRiskLevels": [
+    "CRITICAL",
+    "HIGH"
+  ],
+  "manualContractsFile": "governance/contracts.json",
+  "manualTestFile": "governance/test-catalog.json",
+  "manualRoadmapFile": "governance/roadmap.json"
+}

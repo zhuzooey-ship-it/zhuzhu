@@ -1,0 +1,21 @@
+{
+  "name": "zhuzhu-userscript-governance",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "analyze": "node scripts/analyze-userscript.mjs",
+    "validate": "node scripts/validate-governance.mjs",
+    "sync:sheets": "node scripts/sync-google-sheets.mjs",
+    "governance": "npm run analyze && npm run validate"
+  },
+  "dependencies": {
+    "@babel/parser": "^7.26.0",
+    "@babel/traverse": "^7.26.0",
+    "glob": "^11.0.0",
+    "googleapis": "^146.0.0"
+  }
+}
